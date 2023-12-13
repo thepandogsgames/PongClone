@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,6 +12,7 @@ namespace Code.Match
         private float _height;
         private Vector3 _startPosition;
         private Vector3 _direction;
+        private float _acelerationTime = 0.5f;
         
         private void Awake()
         {
@@ -26,10 +28,11 @@ namespace Code.Match
             _height = Random.Range(-4f, 4f);
             _startPosition.y = _height;
             _transform.position = _startPosition;
-            AddForce();
+            SetDirection();
+            StartCoroutine(StartMovement());
         }
 
-        private void AddForce()
+        private void SetDirection()
         {
             _direction.x = 1f;
             _direction.y = 0.5f;
@@ -37,7 +40,22 @@ namespace Code.Match
             {
                 _direction *= -1;
             }
-            _rb.AddForce(_direction * speed, ForceMode2D.Impulse);
+        }
+
+        private IEnumerator StartMovement()
+        {
+            float currentTime = 0f;
+            float progress = 0f;
+            float currentSpeed = 0f;
+
+            while (_acelerationTime > currentTime)
+            {
+                progress = currentTime / _acelerationTime;
+                currentSpeed = Mathf.Lerp(0f, speed, progress);
+                _rb.velocity = _direction * currentSpeed;
+                currentTime += Time.deltaTime;
+                yield return null;
+            }
         }
     }
 }
